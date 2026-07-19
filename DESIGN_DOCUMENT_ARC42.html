@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DESIGN_DOCUMENT_ARC42.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="banner-delivery-service---architecture-design">Banner Delivery Service - Architecture Design</h1>
+<p><strong>Status:</strong> Proposed production architecture<br>
+<strong>Scope:</strong> High-volume delivery of promotional banners for user-facing clients<br>
+<strong>Method:</strong> Arc42, with C4-style diagrams</p>
+<h2 id="1-introduction-and-goals">1. Introduction and goals</h2>
+<h3 id="11-purpose">1.1 Purpose</h3>
+<p>The current Node.js endpoint queries the banner database for every request. At more than 5,000 requests per second (RPS), this overloads the database and pushes latency beyond 500 ms. This design makes banner delivery cache-led: the database remains the source of truth but is contacted only on cache misses, invalidation recovery, or cache outages.</p>
+<h3 id="12-quality-goals">1.2 Quality goals</h3>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Goal</th>
+<th>Measure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Availability</td>
+<td>Cache outages do not make banner delivery unavailable; database errors return a controlled 503.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Low latency</td>
+<td>Most requests complete at CDN or in-memory cache; track p95 and p99 latency.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Database protection</td>
+<td>One database read per cache fill, including when many requests arrive concurrently.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Fresh-enough content</td>
+<td>CMS changes propagate by event-driven invalidation with a bounded TTL fallback.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Operability</td>
+<td>Cache-layer, database, Node.js, and business metrics identify degradation before users notice.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prototype-implementation-boundary">Prototype implementation boundary</h3>
+<p>This document describes the production target and the executable prototype in this repository. The prototype implements the Nginx edge emulator, two API replicas, in-memory and Redis cache-aside, Redis-backed cross-instance request collapsing, MongoDB, resilience controls, and observability. The durable CMS outbox, managed multi-region CDN, and cross-process local-cache broadcast are production integration points: the prototype exposes the same event-consumer boundary but uses an in-process test adapter to prove invalidation semantics without claiming durable delivery.</p>
+<h3 id="13-stakeholders">1.3 Stakeholders</h3>
+<table>
+<thead>
+<tr>
+<th>Stakeholder</th>
+<th>Need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Users</td>
+<td>Fast and correct promotional banners.</td>
+</tr>
+<tr>
+<td>Marketing managers</td>
+<td>Banner updates become visible promptly and predictably.</td>
+</tr>
+<tr>
+<td>Platform engineers</td>
+<td>Safe scaling, clear metrics, and easy incident response.</td>
+</tr>
+<tr>
+<td>Backend engineers</td>
+<td>Testable TypeScript components with injected dependencies.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-constraints">2. Constraints</h2>
+<ul>
+<li>Node.js 20+, strict TypeScript, Fastify or Express, Docker and Docker Compose.</li>
+<li>Public <code>GET /api/banners</code> returns JSON banners ordered by priority and filtered by activity and schedule.</li>
+<li>Redis must fail open, with logging and circuit breaking.</li>
+<li>The service uses cache-aside and request collapsing (promise memoization).</li>
+<li>Docker Compose includes MongoDB and the API uses a real injected MongoDB repository adapter. An in-memory repository is limited to focused unit tests.</li>
+<li>A test workload is configured for 5,000 RPS. Actual sustained throughput depends on hardware, network, and CDN behavior.</li>
+</ul>
+<h2 id="3-context-and-scope">3. Context and scope</h2>
+<h3 id="c4---system-context-level-1">C4 - System context (Level 1)</h3>
+<pre><code class="language-mermaid"><div class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px'}, 'flowchart': { 'useMaxWidth': true }}}%%
+flowchart LR
+    User([User])
+    Marketer([Marketing manager])
+    CDN[CDN]
+    API[Banner API]
+    CMS[CMS]
+    DB[(Banner DB)]
+    Obs[Telemetry]
+
+    User -->|GET banners| CDN
+    CDN -->|miss| API
+    Marketer -->|manage banners| CMS
+    CMS -->|write| DB
+    CMS -.->|BannerChanged via outbox| API
+    API -->|read| DB
+    API -.->|telemetry| Obs
+
+    %% Direct Visual Component Mapping
+    style User fill:#E8F0FE,stroke:#3767B1,stroke-width:2px,color:#172033
+    style Marketer fill:#E8F0FE,stroke:#3767B1,stroke-width:2px,color:#172033
+    style CDN fill:#DCF3F8,stroke:#157A8A,stroke-width:2px,color:#172033
+    style API fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033
+    style CMS fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033
+    style DB fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033
+    style Obs fill:#F1EAFE,stroke:#7654B8,stroke-width:2px,color:#172033
+</div></code></pre>
+<p><strong>Scope boundary:</strong> authentication and authorization are normally enforced before this public read endpoint, at the CDN/API gateway. The service remains responsible for validating any trusted identity context it consumes and for rate limiting as defence in depth.</p>
+<h2 id="4-solution-strategy">4. Solution strategy</h2>
+<ol>
+<li>Serve cacheable public reads through a CDN using <code>s-maxage</code> and <code>stale-while-revalidate</code>.</li>
+<li>On a CDN miss, use a short-lived, bounded in-memory cache to avoid Redis round trips for hot keys on each API instance.</li>
+<li>Use Redis as the shared cache across replicas. A Redis hit repopulates the local cache.</li>
+<li>On an application-cache miss, use request collapsing so only one request loads the database and refills caches for a given key.</li>
+<li>On Redis error, log and fail open to the database. A circuit breaker bypasses repeated unhealthy Redis calls temporarily.</li>
+<li>Publish CMS changes through a durable outbox/event flow to invalidate or version all cache keys. TTLs are the safety net if an event is delayed or missed.</li>
+</ol>
+<h2 id="5-building-block-view">5. Building block view</h2>
+<h3 id="c4---container-diagram-level-2">C4 - Container diagram (Level 2)</h3>
+<pre><code class="language-mermaid"><div class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px'}, 'flowchart': { 'useMaxWidth': true }}}%%
+flowchart LR
+    User([User]):::actor -->|HTTPS| CDN[CDN]:::edge
+    CDN -->|miss| API
+    CMS[CMS + outbox]:::service -->|change event| Worker
+
+    subgraph Platform[Banner Platform]
+        direction TB
+        API[Banner API]:::service
+        Redis[(Redis)]:::data
+        DB[(Banner DB)]:::data
+        Worker[Invalidation worker]:::service
+    end
+
+    API -->|cache| Redis
+    API -->|read| DB
+    Worker -->|evict| Redis
+    Worker -.->|invalidate| API
+    API -.->|telemetry| Obs[Telemetry]:::support
+    Worker -.->|events| Obs
+
+    classDef actor fill:#E8F0FE,stroke:#3767B1,stroke-width:2px,color:#172033;
+    classDef edge fill:#DCF3F8,stroke:#157A8A,stroke-width:2px,color:#172033;
+    classDef service fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+    classDef data fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033;
+    classDef support fill:#F1EAFE,stroke:#7654B8,stroke-width:2px,color:#172033;
+</div></code></pre>
+<h3 id="c4---component-diagram-level-3-banner-api">C4 - Component diagram (Level 3: Banner API)</h3>
+<pre><code class="language-mermaid"><div class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px'}, 'flowchart': { 'useMaxWidth': true }}}%%
+flowchart LR
+    Route[Banner route]:::entry --> Service[BannerService]:::core
+    Service --> Memory[In-memory cache]:::cache
+    Service --> Redis[Redis adapter]:::cache
+    Service --> SingleFlight[Redis single-flight]:::cache
+    Service --> Repository[Banner repository]:::data
+    Service --> Breaker[Redis circuit]:::support
+    Service -.-> Metrics[Telemetry]:::support
+
+    classDef entry fill:#E8F0FE,stroke:#3767B1,stroke-width:2px,color:#172033;
+    classDef core fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+    classDef cache fill:#DCF3F8,stroke:#157A8A,stroke-width:2px,color:#172033;
+    classDef data fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033;
+    classDef support fill:#F1EAFE,stroke:#7654B8,stroke-width:2px,color:#172033;
+</div></code></pre>
+<h2 id="6-runtime-view">6. Runtime view</h2>
+<h3 id="banner-delivery-request-lifecycle">Banner delivery request lifecycle</h3>
+<pre><code class="language-mermaid"><div class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px'}, 'flowchart': { 'useMaxWidth': true }}}%%
+flowchart LR
+    B([User]):::actor --> C[CDN]:::edge
+
+    C -->|Hit| R([Return banner JSON]):::response
+    C -->|Miss| A[Banner API instance]:::service
+    A --> M[In-memory<br/>TTL/LRU cache]:::memory
+    M -->|Hit| R
+    M -->|Miss| Z[Redis]:::redis
+    Z -->|Hit| P[Fill memory]:::memory
+    P --> R
+    Z -->|Miss / circuit open| L[Local promise<br/>memoization]:::collapse
+    L -->|Circuit open| D[(Banner DB)]:::database
+    L -->|Local leader| F[Redis single-flight<br/>lease]:::collapse
+    F -->|Lease leader| D
+    F -->|Lease waiter| H[Wait, then re-read<br/>Redis]:::redis
+    H --> P
+    D --> W[Fill Redis and<br/>in-memory caches]:::fill
+    W --> R
+
+    classDef actor fill:#E8F0FE,stroke:#3767B1,stroke-width:2px,color:#172033;
+    classDef edge fill:#DCF3F8,stroke:#157A8A,stroke-width:2px,color:#172033;
+    classDef service fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+    classDef memory fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+    classDef redis fill:#DCEFFB,stroke:#2879A8,stroke-width:2px,color:#172033;
+    classDef collapse fill:#FBE5E7,stroke:#B54756,stroke-width:2px,color:#172033;
+    classDef database fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033;
+    classDef fill fill:#F1EAFE,stroke:#7654B8,stroke-width:2px,color:#172033;
+    classDef response fill:#DDF3E4,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+
+</div></code></pre>
+<h3 id="redis-failure-behaviour">Redis failure behaviour</h3>
+<pre><code class="language-mermaid"><div class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px'}, 'flowchart': { 'useMaxWidth': true }}}%%
+flowchart TD
+    R[Redis call]:::redis --> OK{Success?}:::decision
+    OK -->|Yes| S[Continue]:::success
+    OK -->|No| L[Log error]:::warning
+    L --> O{Threshold?}:::decision
+    O -->|No| D[Query DB]:::database
+    O -->|Yes| CB[Open circuit]:::warning
+    CB --> D
+    D -->|Database succeeds| X([Return banner JSON]):::success
+    D -->|DB fails| E([Return 503]):::error
+
+    classDef redis fill:#DCEFFB,stroke:#2879A8,stroke-width:2px,color:#172033;
+    classDef decision fill:#F1EAFE,stroke:#7654B8,stroke-width:2px,color:#172033;
+    classDef success fill:#DDF3E4,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+    classDef warning fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033;
+    classDef database fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033;
+    classDef error fill:#FBE5E7,stroke:#B54756,stroke-width:2px,color:#172033;
+</div></code></pre>
+<h2 id="7-production-deployment-view">7. Production deployment view</h2>
+<pre><code class="language-mermaid"><div class="mermaid">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '10px'}, 'flowchart': { 'useMaxWidth': true }}}%%
+flowchart TB
+    Internet([Internet]):::actor --> Edge[CDN / WAF]:::edge
+    Edge --> LB[Load balancer]:::edge
+    LB --> A1[API 1]:::service
+    LB --> A2[API N]:::service
+    A1 --> Redis[(Managed Redis)]:::data
+    A2 --> Redis
+    A1 --> DB[(Banner database)]:::data
+    A2 --> DB
+    CMS[CMS]:::service --> DB
+    CMS --> Bus[Outbox / bus]:::support
+    Bus --> Worker[Invalidation worker]:::service
+    Worker --> Redis
+    Worker --> PubSub[Local pub/sub]:::support
+    PubSub -.-> A1
+    PubSub -.-> A2
+    A1 -.-> Obs[Telemetry platform]:::support
+    A2 -.-> Obs
+    Worker -.-> Obs
+
+    classDef actor fill:#E8F0FE,stroke:#3767B1,stroke-width:2px,color:#172033;
+    classDef edge fill:#DCF3F8,stroke:#157A8A,stroke-width:2px,color:#172033;
+    classDef service fill:#E9F6EC,stroke:#2E7D4F,stroke-width:2px,color:#172033;
+    classDef data fill:#FFF4D6,stroke:#B7791F,stroke-width:2px,color:#172033;
+    classDef support fill:#F1EAFE,stroke:#7654B8,stroke-width:2px,color:#172033;
+</div></code></pre>
+<p>For the test environment, Docker Compose runs an Nginx edge container plus API, Redis, and MongoDB containers, with persistent named volumes and deterministic MongoDB seed data. Only the edge publishes a host port, so the compose topology mirrors the production request path (<code>user -&gt; edge -&gt; API -&gt; caches -&gt; database</code>) rather than allowing clients to address the origin directly.</p>
+<p>Production runs a real CDN in place of the Nginx container (see 8.0), multiple API replicas behind a load balancer, managed Redis with replication/failover, and MongoDB deployed as a managed replica set behind private networking.</p>
+<h2 id="8-cross-cutting-concepts">8. Cross-cutting concepts</h2>
+<h3 id="80-edge-tier-emulator-versus-production-cdn">8.0 Edge tier: emulator versus production CDN</h3>
+<p>The repository ships an Nginx <code>edge</code> service (<code>docker/nginx/nginx.conf</code>) that implements Layer 1 rather than merely documenting it. It is the only service bound to a host port; the API is private to the Docker network, so the edge is genuinely in the request path and cannot be bypassed by accident.</p>
+<p>Nginx applies the same cache semantics a CDN applies: a shared cache keyed on the public URL, freshness taken from the origin's <code>Cache-Control</code> (<code>s-maxage</code>), request collapsing via <code>proxy_cache_lock</code>, stale-on-error via <code>proxy_cache_use_stale</code>, background revalidation via <code>proxy_cache_background_update</code>, and <code>proxy_cache_bypass</code>/<code>proxy_no_cache</code> on <code>Authorization</code> so credentialed responses never enter the shared cache. Error responses carry <code>Cache-Control: no-store</code> and no <code>proxy_cache_valid</code> exists for any 5xx status, so an outage cannot be latched into the cache.</p>
+<p><strong>This is an emulator of CDN behaviour, not a CDN.</strong> The difference is material when interpreting results:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Docker Nginx edge</th>
+<th>Production CDN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Topology</td>
+<td>Single node, co-located with the origin</td>
+<td>Hundreds of PoPs close to users, often with tiered/shield caching</td>
+</tr>
+<tr>
+<td>Primary saving</td>
+<td>Origin CPU and database load</td>
+<td>Origin load <em>and</em> wide-area round-trip latency</td>
+</tr>
+<tr>
+<td>Capacity</td>
+<td>One container</td>
+<td>Effectively unbounded; absorbs volumetric attack traffic</td>
+</tr>
+<tr>
+<td>Failure domain</td>
+<td>Shared with the origin host</td>
+<td>Independent; survives loss of an entire origin region</td>
+</tr>
+<tr>
+<td>Invalidation</td>
+<td>Restart or volume removal</td>
+<td>Global purge API, typically surrogate-key based</td>
+</tr>
+<tr>
+<td>Additional duties</td>
+<td>None</td>
+<td>TLS termination, WAF, bot management, geo-routing</td>
+</tr>
+</tbody>
+</table>
+<p>Two consequences follow. First, a latency measurement taken through this edge reflects only what caching saved, not what a CDN would save, because there is no geographic distance being eliminated. Second, the stale-during-outage test proves the cache semantics but overstates the resilience: this edge shares a host with the origin, whereas a real CDN keeps serving when the origin's region is entirely gone.</p>
+<p>What does transfer unchanged is the contract. Because freshness is expressed in the origin's <code>Cache-Control</code> header rather than in <code>proxy_cache_valid</code>, swapping this Nginx for CloudFront, Fastly, or Cloudflare requires no application change — the origin already tells any compliant shared cache how to behave.</p>
+<h3 id="81-cache-keys-ttls-and-headers">8.1 Cache keys, TTLs, and headers</h3>
+<p>The executable prototype currently has one public active-banner response shape, so its actual key is <code>banners:active:v1</code>. If market, locale, tenant, device, or any other response-shaping dimension is added, it must become part of both the cache key and the edge-cache variation strategy.</p>
+<ul>
+<li>In-memory cache: 5 seconds, bounded to 500 entries per API instance.</li>
+<li>Redis cache: 30 seconds.</li>
+<li>Edge cache: <code>Cache-Control: public, max-age=10, s-maxage=10, stale-while-revalidate=30</code>.</li>
+<li><code>X-Cache-Status</code> is the authoritative edge diagnostic. <code>X-Origin-Served-By</code> is emitted only for requests that actually contact an API instance; it is deliberately absent on an edge <code>HIT</code> so a cached origin header cannot misrepresent the current request.</li>
+<li>Do not cache per-user or sensitive responses in this public key space; the emulator bypasses shared-cache reads and writes when an <code>Authorization</code> header is present.</li>
+</ul>
+<p>The production tuning range may differ by campaign-correctness requirements and traffic shape. TTL jitter should be added to the shared-cache expiry policy before operating many keys at production scale; it is not claimed as implemented by this prototype.</p>
+<h3 id="82-consistency-and-cms-invalidation">8.2 Consistency and CMS invalidation</h3>
+<p>The database is authoritative. CMS writes a banner change and an outbox record in the same database transaction. An outbox relay publishes <code>BannerChanged</code> after commit. The invalidation worker consumes the event idempotently and deletes/version-bumps affected Redis keys, then broadcasts a local invalidation message to API replicas.</p>
+<p>This provides fast, event-driven invalidation but is <strong>eventually consistent</strong>: a small window can exist while CDN, local cache, or Redis entries remain valid. The TTL bounds that window if an event is delayed. Where a campaign requires immediate removal, use a versioned key or a short-lived deny-list consulted before serving and purge the CDN path as part of the CMS command. Monitor invalidation lag and dead-letter events.</p>
+<p>In this prototype, <code>EventConsumer</code> and <code>InvalidationListener</code> provide the same application boundary, while <code>InProcessEventBus</code> and the test-only CMS route exercise it deterministically. That adapter evicts the receiving replica's local cache and the shared Redis entry; it does not claim durable, cross-process CMS delivery. Replacing it with an idempotent outbox consumer preserves the <code>BannerService</code> contract and supplies the production broadcast/offset-handling behavior described above.</p>
+<h3 id="83-mongodb-data-access">8.3 MongoDB data access</h3>
+<p><strong>ADR-001 - Repository port over persistence-framework coupling.</strong> The assignment names MongoDB as the legacy database but supplies a PostgreSQL table definition. The ambiguity is resolved by making <code>BannerRepository</code> the persistence boundary: <code>BannerService</code> consumes domain <code>Banner</code> values and does not import an ORM, ODM, MongoDB driver, SQL client, or persistence-specific type. The composition root chooses <code>MongoBannerRepository</code> for the executable Docker environment; focused tests use <code>InMemoryBannerRepository</code>. A PostgreSQL adapter can implement the same port without changing business logic, cache-aside behavior, request collapsing, circuit breaking, or HTTP serialization.</p>
+<p>The PostgreSQL table maps one-to-one to the domain aggregate (<code>id</code>, <code>title</code>, <code>imageUrl</code>, <code>targetUrl</code>, <code>priority</code>, <code>isActive</code>, <code>startDate</code>, <code>endDate</code>, <code>createdAt</code>, <code>updatedAt</code>). MongoDB stores that aggregate as a single camelCase document with native BSON dates. Its compound indexes serve status/date queries; PostgreSQL would express the equivalent using a composite B-tree index. This data mapping adds a deliberate, small adapter layer in exchange for engine portability and prevents cache keys and resilience policy from becoming coupled to a particular query framework.</p>
+<p>MongoDB is the source of truth for the Docker test environment and production target. The repository queries active banners using the current time and sorts by descending <code>priority</code>.</p>
+<p>Create and document an index that supports the common read predicate, for example <code>{ isActive: 1, startDate: 1, endDate: 1, priority: -1 }</code>; confirm the final index with <code>explain()</code> against representative production data because range predicates can affect the optimal compound-index ordering. Docker Compose seeds deterministic banners and creates indexes through an initialization script. MongoDB timeouts and connection-pool limits are configured explicitly; a MongoDB failure is logged and produces the controlled <code>503</code> response.</p>
+<p>This confirmation is not left as a documentation-only claim: <code>test/integration/mongo-index-plan.integration.test.ts</code> runs <code>explain('executionStats')</code> against the real seeded collection for the exact <code>findActive</code> query and asserts the plan avoids a full collection scan, without asserting a specific answer to the harder question of whether the sort is index-covered or performed in memory (<code>$or</code>-expressed optional start/end bounds make that plan-dependent — see README.md &quot;What the index actually does&quot;). Treat the seed data as illustrative, not &quot;representative production data&quot;: re-run that test's <code>explain()</code> output against real data volume and cardinality before relying on this index design for a production launch.</p>
+<h3 id="84-request-collapsing-and-cross-instance-coordination">8.4 Request collapsing and cross-instance coordination</h3>
+<p>An in-flight <code>Map&lt;cacheKey, Promise&lt;Banner[]&gt;&gt;</code> in each API instance is retained as the first, zero-network-hop guard. The first local cache-miss request is the local leader; concurrent requests on that same replica await its promise. The map entry is deleted in <code>finally</code>, including after database failure.</p>
+<p>This mechanism alone is not sufficient across multiple API replicas. The production path therefore adds a Redis-backed <strong>single-flight lease</strong> after the in-memory and Redis data-cache misses:</p>
+<ol>
+<li>Each local leader attempts <code>SET banners:lock:&lt;cacheKey&gt; &lt;random-token&gt; NX PX &lt;lease-ms&gt;</code>.</li>
+<li>The replica that acquires the lease is the cross-instance leader. It reads the database, fills Redis and the in-memory cache, then publishes a <code>banners:ready:&lt;cacheKey&gt;</code> notification.</li>
+<li>Leaders that do not acquire the lease wait for that notification for a short bounded interval, then re-read Redis. This avoids every replica querying the database.</li>
+<li>If the notification is delayed, a waiter uses bounded jittered polling of Redis. It never waits indefinitely.</li>
+<li>The lock owner releases the lease only if the token matches, using an atomic Lua script. The short TTL protects recovery if the owner crashes. Lease duration must exceed the normal database-read and cache-fill duration, with alerting when it is close to expiry.</li>
+<li>If Redis is unavailable, distributed coordination is unavailable too. The service still fails open to the database; CDN shielding, local memoization, database connection limits, and autoscaling limit the blast radius during that degraded mode.</li>
+</ol>
+<p>This gives one database load per cache key across healthy API replicas, rather than one per replica. The database read is idempotent, so the rare case in which a leader outlives its lease is bounded by the short cache TTLs and subsequent invalidation. Strict global write ordering is intentionally outside this prototype: it requires an atomically incremented invalidation generation that covers creates, updates, and deletions, not merely an <code>updatedAt</code> value derived from the banners currently returned.</p>
+<h3 id="85-resilience">8.5 Resilience</h3>
+<ul>
+<li>Apply low timeouts to Redis and database operations; do not let one slow dependency consume the Node.js event loop or request pool.</li>
+<li>Redis errors increment a circuit breaker. When open, the API bypasses Redis until the reset interval; exactly one half-open probe is then permitted to restore it after success, preventing recovery from becoming another connection storm.</li>
+<li>Redis failure is fail-open: the API attempts the database and returns valid banners when it can.</li>
+<li>Database failure produces a logged <code>503</code> response. Do not serve unboundedly stale content without an explicit product decision.</li>
+<li>Use rate limiting, WAF rules, and autoscaling as complementary protection.</li>
+</ul>
+<h3 id="86-security-and-authentication">8.6 Security and authentication</h3>
+<p>The public read endpoint is normally protected at the CDN/API gateway with rate limits and, if needed, JWT or signed-session validation. The gateway forwards only verified identity/tenant context. The API never trusts client-supplied tenant headers. CMS write operations require role-based authorization, audit logs, and an authenticated admin boundary. Secrets are supplied through a secret manager, never image layers or source control.</p>
+<h3 id="87-observability">8.7 Observability</h3>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Metrics / telemetry</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User experience</td>
+<td>RPS; HTTP status rate; p50, p95, p99 latency; payload size.</td>
+</tr>
+<tr>
+<td>CDN</td>
+<td>Cache-hit ratio; origin fetch rate; purge errors; edge status.</td>
+</tr>
+<tr>
+<td>In-memory cache</td>
+<td>Hit/miss/expiry/eviction counts; entry count; memory size.</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>Hit/miss/error rate; command latency; timeout rate; circuit state and open duration.</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Query count; query latency; connection-pool saturation; errors.</td>
+</tr>
+<tr>
+<td>Memoization</td>
+<td>Leaders, joiners/waiters, in-flight count, collapsed database queries.</td>
+</tr>
+<tr>
+<td>Invalidation</td>
+<td>Published/consumed/failed events; consumer lag; purge duration; dead-letter count.</td>
+</tr>
+<tr>
+<td>Node.js</td>
+<td>Event-loop lag; heap used; RSS; CPU; GC pause/count; active handles.</td>
+</tr>
+</tbody>
+</table>
+<p>Use structured logs containing request ID, trace ID, cache key hash, cache outcome, and dependency outcome. Export distributed traces for cache misses and database queries; avoid logging banner content or secrets.</p>
+<h2 id="9-architecture-decisions">9. Architecture decisions</h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Rationale</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CDN + local cache + Redis</td>
+<td>Absorbs global, per-instance, and shared-cache load at the cheapest practical layer.</td>
+<td>More invalidation paths and observability needs.</td>
+</tr>
+<tr>
+<td>Cache-aside</td>
+<td>Simple ownership: application controls reads and cache population.</td>
+<td>Misses must be carefully collapsed.</td>
+</tr>
+<tr>
+<td>Local memoization plus Redis single-flight lease</td>
+<td>Collapses cache misses within a replica and across healthy replicas.</td>
+<td>Requires bounded waits, token-safe release, and careful lease-timeout tuning.</td>
+</tr>
+<tr>
+<td>Fail-open Redis circuit breaker</td>
+<td>Preserves availability during Redis incidents and reduces failing calls.</td>
+<td>Database may receive more traffic while Redis is unavailable.</td>
+</tr>
+<tr>
+<td>Event-driven invalidation plus TTL</td>
+<td>Makes changes visible quickly while TTL handles delayed/missed events.</td>
+<td>Small bounded stale window remains.</td>
+</tr>
+<tr>
+<td>Repository port / data mapper</td>
+<td>Resolves MongoDB-versus-PostgreSQL ambiguity and isolates business logic from persistence APIs.</td>
+<td>Each engine needs a small, tested adapter and index design.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="10-quality-requirements-and-acceptance-checks">10. Quality requirements and acceptance checks</h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Expected result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In-memory hit</td>
+<td>No Redis or database call.</td>
+</tr>
+<tr>
+<td>In-memory miss, Redis hit</td>
+<td>Populate local cache; no database call.</td>
+</tr>
+<tr>
+<td>Both caches miss</td>
+<td>Exactly one database query per simultaneous same-key group; populate both caches.</td>
+</tr>
+<tr>
+<td>Redis unavailable</td>
+<td>Log error, circuit-break as needed, query database, return response.</td>
+</tr>
+<tr>
+<td>Database unavailable</td>
+<td>Log error, return 503 JSON response.</td>
+</tr>
+<tr>
+<td>CMS banner update</td>
+<td>Event invalidates Redis and receiving-replica local keys; CDN is purged if immediate visibility is required.</td>
+</tr>
+<tr>
+<td>Edge cold key</td>
+<td>First request reports <code>X-Cache-Status: MISS</code> and reaches the origin.</td>
+</tr>
+<tr>
+<td>Edge warm key</td>
+<td>Repeat request reports <code>HIT</code>; origin request and database counters are unchanged.</td>
+</tr>
+<tr>
+<td>Concurrent edge misses</td>
+<td><code>proxy_cache_lock</code> collapses them into a single origin request.</td>
+</tr>
+<tr>
+<td>Origin stopped, entry stale</td>
+<td>Edge serves <code>STALE</code> content with HTTP 200 instead of an error.</td>
+</tr>
+<tr>
+<td>Origin returns 503</td>
+<td>Never cached at the edge; a repeat request is still a MISS.</td>
+</tr>
+<tr>
+<td>5,000 RPS test</td>
+<td>Run the Dockerized k6 workload; report achieved RPS, latency percentiles, error rate, cache outcomes, and DB query count.</td>
+</tr>
+</tbody>
+</table>
+<p>The benchmark is configured for 5,000 RPS; it does not promise every laptop will sustain it. Record CPU, memory, container limits, and observed throughput with the result.</p>
+<h3 id="verified-local-run-docker-desktop-2026-07-19">Verified local run (Docker Desktop, 2026-07-19)</h3>
+<ul>
+<li>Unit tests: 65/65 passed; integration tests: 31/31 passed; production image build passed.</li>
+<li>Warm-cache phase: 149,459 successful requests in 30 seconds (approximately 4,982 RPS).</li>
+<li>All HTTP checks passed; HTTP failure rate was 0%; overall p95 latency was 1.64 ms.</li>
+<li>The cross-instance, cold-cache, and Redis-outage phases completed. Redis was stopped and restored by the harness; Redis errors and an open circuit state were observed as expected.</li>
+<li>1,061 iterations were dropped during the intentionally degraded Redis-outage phase. They are retained as diagnostic evidence of dependency-timeout pressure, not treated as an API error or a warm-cache capacity result.</li>
+</ul>
+<h2 id="11-risks-and-technical-debt">11. Risks and technical debt</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CDN or cache serves a briefly stale campaign</td>
+<td>Event invalidation, TTLs, purge workflow, and product-defined emergency removal path.</td>
+</tr>
+<tr>
+<td>Redis outage shifts load to database</td>
+<td>Circuit breaker, autoscaling, connection limits, rate limiting, and outage alerting.</td>
+</tr>
+<tr>
+<td>Simultaneous expiry causes burst traffic across replicas</td>
+<td>CDN shielding, local memoization, Redis single-flight lease, and future shared-TTL jitter.</td>
+</tr>
+<tr>
+<td>Incorrect cache key mixes markets/locales</td>
+<td>Include all response-shaping inputs in the key; test key isolation.</td>
+</tr>
+<tr>
+<td>Metrics add overhead at high RPS</td>
+<td>Use counters/histograms with bounded labels and sampling for traces.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="12-glossary">12. Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cache-aside</td>
+<td>Application reads cache first, loads source on miss, then stores the result.</td>
+</tr>
+<tr>
+<td>CDN</td>
+<td>Edge network that caches responses close to users.</td>
+</tr>
+<tr>
+<td>Circuit breaker</td>
+<td>Stops calls to a repeatedly failing dependency for a limited interval.</td>
+</tr>
+<tr>
+<td>Request collapsing</td>
+<td>Multiple identical concurrent cache misses share one in-flight promise.</td>
+</tr>
+<tr>
+<td>Outbox pattern</td>
+<td>Persist a domain event with the data change, then publish it reliably after commit.</td>
+</tr>
+</tbody>
+</table>
+
+</body>
+</html>

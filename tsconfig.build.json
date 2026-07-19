@@ -1,0 +1,14 @@
+{
+  // Production build is intentionally separate from the editor/type-check
+  // project so compiled application files stay at dist/<file>, not
+  // dist/src/<file>.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules", "coverage", "test"]
+}

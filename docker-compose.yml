@@ -1,0 +1,176 @@
+name: banner-delivery-service
+
+# Runtime flow:
+#   User -> edge (Nginx) -> {api-a, api-b} -> in-memory (L2) -> redis (L3) -> mongo
+#
+# Only `edge` publishes a host port for the API path. Neither API replica is
+# reachable from the host directly, so every client request traverses the
+# edge cache exactly as it would traverse a CDN in production, and the edge's
+# round-robin upstream is what actually distributes load across replicas —
+# this is what makes cross-instance single-flight collapsing a real,
+# multi-process behaviour rather than something only proven against fakes.
+
+x-api-common: &api-common
+  build:
+    context: .
+    target: development
+  image: banner-delivery-service-api:dev
+  # No host port: each replica is private, reachable only via `edge` on the
+  # Docker network (and from sibling containers such as the k6 runner).
+  expose:
+    - '3000'
+  environment: &api-common-environment
+    PORT: '3000'
+    NODE_ENV: development
+    MONGODB_URI: mongodb://mongo:27017
+    MONGODB_DATABASE: banners
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: '3000'
+    MONGODB_MAX_POOL_SIZE: '20'
+    REDIS_URL: redis://redis:6379
+    REDIS_CONNECT_TIMEOUT_MS: '2000'
+    REDIS_COMMAND_TIMEOUT_MS: '500'
+    CACHE_IN_MEMORY_TTL_MS: '5000'
+    CACHE_IN_MEMORY_MAX_ITEMS: '500'
+    CACHE_REDIS_TTL_SECONDS: '30'
+    CIRCUIT_BREAKER_FAILURE_THRESHOLD: '3'
+    CIRCUIT_BREAKER_RESET_TIMEOUT_MS: '10000'
+    LEASE_TTL_MS: '5000'
+    LEASE_WAIT_TIMEOUT_MS: '3000'
+    LEASE_POLL_INTERVAL_MS: '100'
+    LEASE_POLL_JITTER_MS: '50'
+    LOG_LEVEL: debug
+    LOG_PRETTY: 'true'
+    # Test-only reset endpoint (`POST /__test__/reset`), OFF by default.
+    # Set here (dev/test compose only) so integration tests can reset cache
+    # state and metrics between assertions. The production Dockerfile stage
+    # never sets this, and server.ts additionally refuses to honour it if
+    # NODE_ENV=production — see src/shared/test-controls/reset-route.ts.
+    ENABLE_TEST_CONTROLS: 'true'
+  volumes: &api-common-volumes
+    # Live-reload: bind-mount source so tsx watch picks up host edits
+    # without a host Node.js/npm install; node_modules stays in the image.
+    - ./src:/app/src:delegated
+    - ./test:/app/test:delegated
+    - ./package.json:/app/package.json:ro
+    - ./tsconfig.json:/app/tsconfig.json:ro
+    - ./tsconfig.test.json:/app/tsconfig.test.json:ro
+    - ./jest.config.cjs:/app/jest.config.cjs:ro
+    - ./jest.integration.config.cjs:/app/jest.integration.config.cjs:ro
+    - ./eslint.config.mjs:/app/eslint.config.mjs:ro
+    - ./.prettierrc.json:/app/.prettierrc.json:ro
+  depends_on: &api-common-depends-on
+    redis:
+      # API can still start if Redis is unhealthy/unavailable (fail-open
+      # design), but in the common case we wait for it to be ready so
+      # local dev doesn't spend the first few seconds hitting DB fallback.
+      condition: service_healthy
+      required: false
+    mongo:
+      # Wait for MongoDB to finish initializing (including the seed script)
+      # so the first request hits a populated database. `required: false`
+      # keeps the "MongoDB down => controlled 503" behavior demonstrable:
+      # the API still starts if MongoDB never becomes healthy.
+      condition: service_healthy
+      required: false
+  healthcheck: &api-common-healthcheck
+    test:
+      [
+        'CMD',
+        'node',
+        '-e',
+        "require('http').get('http://127.0.0.1:3000/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+      ]
+    interval: 10s
+    timeout: 3s
+    retries: 3
+    start_period: 10s
+  restart: unless-stopped
+
+services:
+  edge:
+    image: nginx:1.27.5-alpine
+    # The ONLY public entrypoint for the banner API.
+    ports:
+      - '3000:80'
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - edge-cache:/var/cache/nginx
+    depends_on:
+      api-a:
+        # Wait for a healthy origin when possible, but don't require it: the
+        # edge must still start so it can serve STALE content during an
+        # origin outage.
+        condition: service_healthy
+        required: false
+      api-b:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1/healthz']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  # Two independently running replicas of the same image, sharing the same
+  # Redis and MongoDB. `INSTANCE_ID` is the only difference between them and
+  # is what shows up in the `X-API-Instance` response header, so a test (or
+  # an operator) can tell which process actually handled a given request.
+  api-a:
+    <<: *api-common
+    environment:
+      <<: *api-common-environment
+      INSTANCE_ID: api-a
+
+  api-b:
+    <<: *api-common
+    environment:
+      <<: *api-common-environment
+      INSTANCE_ID: api-b
+
+  redis:
+    image: redis:7.4.2-alpine
+    # No host port by default: Redis is reachable only on the Docker network
+    # (from the api-a/api-b services and the edge). To reach it from the host
+    # (e.g. `redis-cli` for local debugging), layer on the explicit dev
+    # override: `-f docker-compose.yml -f docker-compose.dev-ports.yml`.
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0.15
+    environment:
+      # Database the init script seeds into, and the one the API reads.
+      MONGO_INITDB_DATABASE: banners
+    # No host port by default: MongoDB is reachable only on the Docker
+    # network. To reach it from the host (e.g. `mongosh`, or
+    # `npm run test:integration` run outside Docker), layer on the explicit
+    # dev override: `-f docker-compose.yml -f docker-compose.dev-ports.yml`.
+    volumes:
+      - mongo-data:/data/db
+      # Init scripts run once, on first boot with an empty data volume.
+      # `docker compose down -v` resets and re-seeds.
+      - ./docker/mongo-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      # Generous start period: first boot also runs index creation + seeding.
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+    name: banner-delivery-service-redis-data
+  mongo-data:
+    name: banner-delivery-service-mongo-data
+  edge-cache:
+    name: banner-delivery-service-edge-cache

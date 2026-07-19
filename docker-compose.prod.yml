@@ -1,0 +1,33 @@
+# Production-shaped variant: builds the `production` Dockerfile stage
+# (compiled dist/, no dev tooling, non-root user) instead of the live-reload
+# dev image. Run with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+#
+# Applies to both replicas. Sets NODE_ENV=production and, deliberately, does
+# NOT set ENABLE_TEST_CONTROLS — it stays unset (falsy), and even if it were
+# somehow set truthy, src/server.ts additionally refuses to honour it while
+# NODE_ENV=production. See src/shared/test-controls/reset-route.ts for the
+# full rationale. `docker-compose.yml`'s dev-only volumes are reset here
+# since the production stage runs from the built image, not a bind mount.
+services:
+  api-a:
+    build:
+      context: .
+      target: production
+    image: banner-delivery-service-api:prod
+    environment:
+      NODE_ENV: production
+      LOG_PRETTY: 'false'
+      ENABLE_TEST_CONTROLS: 'false'
+    volumes: !reset []
+
+  api-b:
+    build:
+      context: .
+      target: production
+    image: banner-delivery-service-api:prod
+    environment:
+      NODE_ENV: production
+      LOG_PRETTY: 'false'
+      ENABLE_TEST_CONTROLS: 'false'
+    volumes: !reset []

@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    // This is the editor/type-check project. It covers both application and
+    // Jest files, so VS Code resolves describe/it/expect without treating
+    // tests as an unconfigured inferred project.
+    "rootDir": ".",
+    "noEmit": true,
+    "types": ["node", "jest"],
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    /* Lead-Level Production Enhancements */
+    "sourceMap": true, // Essential for production error stack traces and debugging
+    "removeComments": true, // Optimizes and shrinks production build artifacts
+    "noImplicitReturns": true, // Prevents accidental undefined returns in service layers
+    "noUnusedLocals": true, // Catches dead code before the compiler finishes
+    "noUnusedParameters": true, // Enforces clean, maintainable function signatures
+    "noImplicitOverride": true, // Ensures class inheritance remains safe and intentional
+    "exactOptionalPropertyTypes": true // Prevents setting optional schema fields explicitly to undefined
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["dist", "node_modules", "coverage"]
+}

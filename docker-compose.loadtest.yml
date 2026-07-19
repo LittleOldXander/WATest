@@ -1,0 +1,35 @@
+# Adds a Dockerized k6 load-test runner on top of the base stack. Run with:
+#   docker compose -f docker-compose.yml -f docker-compose.loadtest.yml up --build k6
+#
+# The k6 container mounts the Docker socket so run-load-test.sh can stop/
+# start the `redis` service mid-run to exercise the fail-open scenario, and
+# uses the `docker` CLI installed via the entrypoint override below.
+services:
+  k6:
+    build:
+      context: .
+      dockerfile: docker/k6/Dockerfile
+    image: banner-delivery-service-k6:dev
+    depends_on:
+      edge:
+        condition: service_healthy
+      api-a:
+        condition: service_healthy
+      api-b:
+        condition: service_healthy
+    environment:
+      # Targets ONE origin replica directly, on purpose: these scenarios
+      # measure that replica's cache layers (in-memory, Redis, single-flight
+      # lease). The workload also has an explicit edge-routed scenario to
+      # prove cross-instance collapsing through the real load balancer.
+      ORIGIN_BASE_URL: http://api-a:3000
+      EDGE_BASE_URL: http://edge
+      COMPOSE_FILE: /workspace/docker-compose.yml
+      COMPOSE_PROJECT_NAME: banner-delivery-service
+    volumes:
+      - ./test/load:/scripts:ro
+      - ./test/load/results:/results
+      - ./docker-compose.yml:/workspace/docker-compose.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: /workspace
+    entrypoint: ['sh', '/scripts/run-load-test.sh']

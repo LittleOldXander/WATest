@@ -1,0 +1,18 @@
+node_modules
+dist
+coverage
+npm_install.log
+*.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.pdf
+*.html
+
+# NOTE: `test/` is intentionally NOT ignored. The development image runs the
+# test suite (`docker compose run --rm api npm test`), so it needs the test
+# files and jest/tsconfig configs. The production stage copies only `dist/`
+# and production dependencies, so tests never reach a shipped image.
+test/load/results

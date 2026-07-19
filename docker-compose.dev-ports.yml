@@ -1,0 +1,20 @@
+# Explicit, opt-in host port exposure for MongoDB and Redis during local
+# development — e.g. so you can point a host GUI client (Compass, RedisInsight)
+# or the host `mongosh`/`redis-cli` at the containers directly.
+#
+# Not used by default: `docker compose up` (docker-compose.yml alone) keeps
+# both services reachable only on the Docker network. Layer this file on top
+# when you need host access:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev-ports.yml up --build
+#
+# Never combine this with docker-compose.prod.yml — production must not
+# publish these ports to the host.
+services:
+  redis:
+    ports:
+      - '6379:6379'
+
+  mongo:
+    ports:
+      - '27017:27017'

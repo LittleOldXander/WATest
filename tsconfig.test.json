@@ -1,0 +1,14 @@
+{
+  // Test-only compiler view: same strictness as production, but rooted at the
+  // repo so `test/` sits inside rootDir alongside `src/`.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    // ts-jest transpiles file-by-file; this matches that model and silences
+    // its hybrid-module (NodeNext) warning.
+    "isolatedModules": true,
+    "types": ["node", "jest"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

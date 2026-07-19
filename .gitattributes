@@ -1,0 +1,9 @@
+# Keep repository text files portable across Windows development and Linux
+# Docker containers. In particular, shell scripts must not acquire CRLF.
+* text=auto eol=lf
+
+# Binary and generated document formats must never undergo text conversion.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
